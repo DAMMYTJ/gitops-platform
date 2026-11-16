@@ -1,0 +1,14 @@
+# OpenTofu / Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+
+# Secrets and keys
+*.agekey
+keys.txt
+*.pem
+
+# macOS
+.DS_Store
