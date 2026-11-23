@@ -52,3 +52,11 @@ Running log of what I did, why, and what broke. Used later to write the README a
 - Adopted the existing Secrets with an import block, so nothing was recreated. The plan's only in-place changes were provider defaults; the data field was unchanged.
 - Proof: deleted the staging Secret by hand, ran tofu apply, and it was rebuilt from the encrypted file; the staging database still worked.
 - Lesson: stop and read a plan for "destroy" or data changes before applying.
+
+## Phase 6: Argo Rollouts (canary releases)
+- Installed Argo Rollouts with OpenTofu (helm provider). The kubectl plugin could not be built by Homebrew (old Xcode tools), so I downloaded the prebuilt binary instead of using sudo.
+- Converted the API Deployment to a Rollout in the Helm chart. Canary steps: 25%, 50%, 100% with 30s pauses; prod runs 4 API pods so each step is one pod. Traffic is split by pod count (no service mesh), which is a known limitation.
+- Released API 1.1.0 to prod as a canary through Git. Note: 1.1.0 is the same code as 1.0.0 with a new tag and version label; it exercises the release mechanics, not new code.
+- Released a deliberately broken 1.2.0 (image not available). The new pod never became ready, the Rollout aborted after the 60s deadline, and the 4 healthy pods kept serving; the stable version never dropped.
+- Rolled back through Git with git revert, and ArgoCD brought the Rollout back to Healthy.
+- Lesson: my first watch of the canary started after the rollout finished, so I missed the mixed-version output; start the watch before pushing.
