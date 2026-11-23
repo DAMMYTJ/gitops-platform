@@ -1,0 +1,21 @@
+# The "parent" application (app-of-apps pattern).
+# Apply this file once by hand. After that, ArgoCD watches argocd/apps/ in Git
+# and creates or removes the child applications by itself.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/DAMMYTJ/gitops-platform.git
+    targetRevision: main
+    path: argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

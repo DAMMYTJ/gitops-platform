@@ -1,0 +1,4 @@
+environment: dev
+
+ingress:
+  host: dev.localhost

@@ -1,0 +1,11 @@
+environment: prod
+
+ingress:
+  host: prod.localhost
+
+# Prod runs two copies of the web page and the API
+web:
+  replicas: 2
+
+api:
+  replicas: 2
