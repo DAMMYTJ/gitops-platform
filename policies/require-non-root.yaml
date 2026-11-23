@@ -1,24 +1,27 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-non-root
 spec:
-  validationFailureAction: Audit
-  background: true
-  rules:
-    - name: run-as-non-root
-      match:
-        any:
-          - resources:
-              kinds: [Pod]
-              namespaces: [dev, staging, prod]
-      validate:
-        message: "Containers must run as non-root (runAsNonRoot: true)."
-        anyPattern:
-          - spec:
-              securityContext:
-                runAsNonRoot: true
-          - spec:
-              containers:
-                - securityContext:
-                    runAsNonRoot: true
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: ['v1']
+        operations: ['CREATE', 'UPDATE']
+        resources: ['pods']
+  matchConditions:
+    - name: only-app-namespaces
+      expression: "object.metadata.namespace in ['dev', 'staging', 'prod']"
+  validationActions:
+    - Audit
+  validations:
+    - expression: >
+        object.spec.containers.all(c,
+          c.?securityContext.?runAsNonRoot.orValue(false) == true ||
+          object.spec.?securityContext.?runAsNonRoot.orValue(false) == true)
+      message: "Containers must set runAsNonRoot: true."

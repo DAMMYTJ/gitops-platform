@@ -1,22 +1,26 @@
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-memory-limits
 spec:
-  validationFailureAction: Audit
-  background: true
-  rules:
-    - name: memory-limit
-      match:
-        any:
-          - resources:
-              kinds: [Pod]
-              namespaces: [dev, staging, prod]
-      validate:
-        message: "Every container must set a memory limit."
-        pattern:
-          spec:
-            containers:
-              - resources:
-                  limits:
-                    memory: "?*"
+  evaluation:
+    admission:
+      enabled: true
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: ['v1']
+        operations: ['CREATE', 'UPDATE']
+        resources: ['pods']
+  matchConditions:
+    - name: only-app-namespaces
+      expression: "object.metadata.namespace in ['dev', 'staging', 'prod']"
+  validationActions:
+    - Audit
+  validations:
+    - expression: >
+        object.spec.containers.all(c,
+          c.?resources.?limits.?memory.orValue('') != '')
+      message: "Every container must set a memory limit."
