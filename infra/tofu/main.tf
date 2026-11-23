@@ -1,6 +1,10 @@
 terraform {
   required_version = ">= 1.6"
   required_providers {
+    sops = {
+      source  = "carlpett/sops"
+      version = "~> 1.0"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = ">= 2.30"

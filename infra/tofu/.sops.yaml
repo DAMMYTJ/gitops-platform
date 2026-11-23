@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: .*\.enc\.yaml$
+    encrypted_regex: ^(mysql-password|mysql-root-password)$
+    age: age1d6gk09du4d3tvkyzut4sg08ya8a5qsss7a8fmvs37q3glzj7094q0yg3z0
