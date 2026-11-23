@@ -44,3 +44,11 @@ Running log of what I did, why, and what broke. Used later to write the README a
 - Fix in Git: MySQL runs as user 999 with runAsNonRoot, fsGroup 999, all capabilities dropped. Data survived the change.
 - Then switched policies from Audit to Deny. Bad pods (latest tag, root, no memory limit) are rejected by the admission webhook; a compliant pod is accepted.
 - Lesson: hard-refresh ArgoCD (argocd.argoproj.io/refresh=hard) instead of waiting for the poll.
+
+## Phase 5: Encrypted secrets (SOPS + age + OpenTofu)
+- Generated an age key pair (private key kept outside the repo, backed up). SOPS config in infra/tofu/.sops.yaml encrypts only the password values in secrets.enc.yaml, so the file is safe in Git.
+- Design choice: OpenTofu (carlpett/sops provider) decrypts at apply time and creates the Kubernetes Secrets. I chose this over an ArgoCD SOPS plugin because that needs a customised repo-server. Trade-off: decrypted values sit in the local, gitignored OpenTofu state.
+- Kept the existing passwords on purpose: MySQL only reads them when it first initialises its data folder, so new random values would have broken the databases.
+- Adopted the existing Secrets with an import block, so nothing was recreated. The plan's only in-place changes were provider defaults; the data field was unchanged.
+- Proof: deleted the staging Secret by hand, ran tofu apply, and it was rebuilt from the encrypted file; the staging database still worked.
+- Lesson: stop and read a plan for "destroy" or data changes before applying.
