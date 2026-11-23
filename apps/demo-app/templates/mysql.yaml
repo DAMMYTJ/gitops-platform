@@ -27,6 +27,11 @@ spec:
       labels:
         app: mysql
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
       containers:
         - name: mysql
           image: {{ .Values.mysql.image }}
@@ -62,6 +67,10 @@ spec:
               memory: 256Mi
             limits:
               memory: 640Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           volumeMounts:
             - name: data
               mountPath: /var/lib/mysql
