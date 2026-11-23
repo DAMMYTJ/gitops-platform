@@ -35,3 +35,12 @@ Running log of what I did, why, and what broke. Used later to write the README a
 - Test: deleted the dev MySQL pod; data persisted on the PersistentVolume
 - Lesson: Colima started in the foreground by mistake, so I deleted it and restarted with 4 CPU/6 GB/40 GB
 - Lesson: stale shell hash gave the wrong kubectl version; fixed with `hash -r`
+
+## Phase 4: Kyverno policy-as-code
+- Installed Kyverno with OpenTofu (helm provider). Three policies in policies/, deployed by ArgoCD: require-non-root, require-memory-limits, disallow-latest-tag.
+- Mistake: wrote legacy kyverno.io/v1 ClusterPolicy. Kyverno v1.20 rejects it, and ArgoCD showed the error. Fix: rewrote all three as ValidatingPolicy (policies.kyverno.io/v1, CEL expressions).
+- Mistake: created the ArgoCD Application file for policies in the wrong step and it was missing, so root never saw it. Found by comparing the revision ArgoCD read with git rev-parse HEAD.
+- Started in Audit mode. The policy report showed mysql failing require-non-root in all 3 environments (the official image starts as root).
+- Fix in Git: MySQL runs as user 999 with runAsNonRoot, fsGroup 999, all capabilities dropped. Data survived the change.
+- Then switched policies from Audit to Deny. Bad pods (latest tag, root, no memory limit) are rejected by the admission webhook; a compliant pod is accepted.
+- Lesson: hard-refresh ArgoCD (argocd.argoproj.io/refresh=hard) instead of waiting for the poll.
