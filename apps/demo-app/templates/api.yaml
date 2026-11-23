@@ -1,11 +1,23 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: api
   labels:
     app: api
 spec:
   replicas: {{ .Values.api.replicas }}
+  progressDeadlineSeconds: 60
+  progressDeadlineAbort: true
+  strategy:
+    canary:
+      steps:
+        - setWeight: 25
+        - pause:
+            duration: 30s
+        - setWeight: 50
+        - pause:
+            duration: 30s
+        - setWeight: 100
   selector:
     matchLabels:
       app: api
