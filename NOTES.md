@@ -61,4 +61,12 @@ My personal log for this project. I'm keeping track of what I've done, why I mad
 ## Wrap-up
 - Went through my screenshots and organised 36 of them inside `docs/evidence`, with one folder for each phase.
 - Finished writing the README, the architecture diagram and 5 ADRs in `docs/`
-- Added the known limitations to the README so it's clear what the project currently covers and what still needs improvement (local cluster, canary releases based on pod count, same-code 1.1.0 release, secrets in local state, one MySQL instance per environment, and Helm chart versions not pinned yet)
+- Added the known limitations to the README so it's clear what the project currently covers and what still needs improvement (local cluster, canary releases based on pod count, same-code 1.1.0 release, secrets in local state, one MySQL instance per environment)
+
+## Pinned versions and an incident (24 Nov 2026)
+- Pinned the Helm chart versions in OpenTofu (ArgoCD 10.18.2, Kyverno 3.10.0, Argo Rollouts 2.43.12). `tofu plan` said no changes, so they match what was already installed
+- Incident: I edited three template files directly on GitHub and replaced the `---` lines with blank lines, thinking they were just decoration. They separate the Kubernetes objects in each file, so the Rollout, the Deployments and the PVC got merged into the Services
+- `helm lint` still passed, so it didn't catch it. The server dry run only listed 3 Services and the Ingress, and `kubectl argo rollouts get rollout api -n prod` said the Rollout was not found
+- ArgoCD has prune on, so it deleted the missing workloads in dev, staging and prod and then recreated them after the fix. The MySQL volumes were recreated too, so the test data is gone
+- Fix: `git revert` on the 3 commits, then `git push` and a hard refresh. Everything came back Healthy (prod API 1.1.0, 4 pods)
+- Next time: edit only on my machine, never in the GitHub editor, and check with `helm template ... | kubectl apply --dry-run=server -f -` before pushing. Lint isn't enough
