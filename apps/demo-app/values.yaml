@@ -2,9 +2,9 @@
 
 environment: dev
 
-# The Secret holding the MySQL passwords. It is created by hand in each
-# namespace (never stored in Git) with these keys:
-#   mysql-password, mysql-root-password
+# The Secret holding the MySQL passwords. OpenTofu creates it in each
+# namespace from the encrypted infra/tofu/secrets.enc.yaml (see secrets.tf).
+# Keys: mysql-password, mysql-root-password
 secretName: mysql-credentials
 
 ingress:

@@ -112,7 +112,6 @@ You need your own age key: replace the recipient in `infra/tofu/.sops.yaml` and 
 - Release 1.1.0 is the same code as 1.0.0 with a new tag; it demonstrates the release process, not new features.
 - Decrypted secrets sit in the local, gitignored OpenTofu state.
 - One MySQL instance per environment, with no replication or backups.
-- ArgoCD and Kyverno chart versions are not yet pinned in OpenTofu.
 - Images are built locally and imported into k3d; there is no registry or CI pipeline yet (the next project covers that).
 
 ## Next

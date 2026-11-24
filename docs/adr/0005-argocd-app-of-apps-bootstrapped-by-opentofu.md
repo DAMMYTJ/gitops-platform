@@ -12,4 +12,4 @@ OpenTofu installs ArgoCD, Kyverno and Argo Rollouts with Helm. One `root` Applic
 - Day-to-day changes are Git commits only. Deleting a Deployment by hand is reverted by ArgoCD (tested).
 - One chart and three values files serve all environments, so differences between environments are visible in Git.
 - The repos are public so ArgoCD needs no credentials. A private setup would add a repository credential.
-- ArgoCD and Kyverno chart versions are not yet pinned in OpenTofu (to do).
+- Helm chart versions are pinned in the OpenTofu files, so a rebuild installs the same versions.

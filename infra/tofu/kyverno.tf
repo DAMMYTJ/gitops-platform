@@ -4,5 +4,6 @@ resource "helm_release" "kyverno" {
   create_namespace = true
   repository       = "https://kyverno.github.io/kyverno/"
   chart            = "kyverno"
+  version          = "3.10.0"
   timeout          = 600
 }
